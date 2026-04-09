@@ -45,20 +45,25 @@ def _(mo):
 
 
 @app.cell
-def _(mo):
+def _(controller_type, mo):
+    _is_p = controller_type.value == "P"
+    _is_pi_or_p = controller_type.value in ["P", "PI"]
+
     kp = mo.ui.slider(
         start=0.1, stop=30.0, value=5.0, step=0.1,
         label="Kp (proportional gain)",
         show_value=True,
     )
     ki = mo.ui.slider(
-        start=0.0, stop=15.0, value=1.5, step=0.1,
+        start=0.0, stop=15.0, value=(0.0 if _is_p else 1.5), step=0.1,
         label="Ki (integral gain)",
+        disabled=_is_p,
         show_value=True,
     )
     kd = mo.ui.slider(
-        start=0.0, stop=5.0, value=0.8, step=0.05,
+        start=0.0, stop=5.0, value=(0.0 if _is_pi_or_p else 0.8), step=0.05,
         label="Kd (derivative gain)",
+        disabled=_is_pi_or_p,
         show_value=True,
     )
     mo.vstack([kp, ki, kd], gap="0.6rem")
