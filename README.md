@@ -56,9 +56,3 @@ pip install marimo numpy scipy matplotlib
 
 - Individual notebooks may add their own domain-specific dependencies.
 - Some notebooks are designed for headless rendering and may use stable plotting backends.
-
-## License
-
-No license file is currently included in this repository.
-# marimo-ee-lab
-[![Open in molab](https://molab.marimo.io/molab-shield.svg)](https://molab.marimo.io/notebooks/nb_papem6WTjaikkpL5z3qDpo)
