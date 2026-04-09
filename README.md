@@ -2,6 +2,7 @@
 
 This repository contains Marimo notebooks for electrical engineering and electronics lab work.
 It is intended for interactive exploration, simulation, and visualization of EE/ECE concepts.
+[![Open in molab](https://molab.marimo.io/molab-shield.svg)](https://molab.marimo.io/notebooks/nb_papem6WTjaikkpL5z3qDpo)
 
 ## What This Repository Is For
 
@@ -61,3 +62,5 @@ pip install marimo numpy scipy matplotlib
 ## License
 
 No license file is currently included in this repository.
+# marimo-ee-lab
+[![Open in molab](https://molab.marimo.io/molab-shield.svg)](https://molab.marimo.io/notebooks/nb_papem6WTjaikkpL5z3qDpo)
