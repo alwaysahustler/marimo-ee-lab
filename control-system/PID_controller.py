@@ -9,11 +9,9 @@ def _():
     import marimo as mo
     import numpy as np
     from scipy import signal
-    import matplotlib
-    matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     import matplotlib.ticker as ticker
-    return matplotlib, mo, np, plt, signal, ticker
+    return mo, np, plt, signal, ticker
 
 
 @app.cell
@@ -193,5 +191,5 @@ def _(controller_type, kd, ki, kp, mo, np, plt, signal, ticker):
 | Settling time (±2%) | {_settl_txt} |
 """)
 
-    mo.vstack([_metrics_table, mo.as_html(_fig)])
+    mo.vstack([_metrics_table, mo.as_html(plt.gcf())])
     return
