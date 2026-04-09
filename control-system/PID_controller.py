@@ -19,11 +19,15 @@ def _():
 @app.cell
 def _(mo):
     mo.md(r"""
-    # 🎛️ PID Controller Simulator
+    # PID Controller Analysis
 
-    **Plant model:** $\displaystyle G(s) = \frac{1}{s^2 + 2s + 3}$ — second-order underdamped system
+    Plant model:
 
-    Tune the gains below and watch the closed-loop response update in real time.
+    $$
+    G(s) = \frac{1}{s^2 + 2s + 3}
+    $$
+
+    Use the controller mode and gains below to evaluate closed-loop step-response behavior.
     """)
     return
 
@@ -33,7 +37,7 @@ def _(mo):
     controller_type = mo.ui.radio(
         options=["P", "PI", "PID"],
         value="PID",
-        label="**Controller Mode**",
+        label="Controller mode",
         inline=True,
     )
     controller_type
@@ -44,17 +48,17 @@ def _(mo):
 def _(mo):
     kp = mo.ui.slider(
         start=0.1, stop=30.0, value=5.0, step=0.1,
-        label="**Kp** — Proportional gain",
+        label="Kp (proportional gain)",
         show_value=True,
     )
     ki = mo.ui.slider(
         start=0.0, stop=15.0, value=1.5, step=0.1,
-        label="**Ki** — Integral gain",
+        label="Ki (integral gain)",
         show_value=True,
     )
     kd = mo.ui.slider(
         start=0.0, stop=5.0, value=0.8, step=0.05,
-        label="**Kd** — Derivative gain",
+        label="Kd (derivative gain)",
         show_value=True,
     )
     mo.vstack([kp, ki, kd], gap="0.6rem")
@@ -118,117 +122,71 @@ def _(controller_type, kd, ki, kp, mo, np, plt, signal, ticker):
     _poles  = np.roots(_CLden)
     _stable = bool(np.all(np.real(_poles) < 0))
 
-    # ── Colour palette (Catppuccin Mocha) ─────────────────────────────────────
-    _BG   = "#1e1e2e"
-    _SURF = "#181825"
-    _GRID = "#313244"
-    _TEXT = "#cdd6f4"
-    _SUB  = "#a6adc8"
-    _BLUE = "#89b4fa"
-    _RED  = "#f38ba8"
-    _GRN  = "#a6e3a1"
-    _YEL  = "#f9e2af"
-    _PEACH= "#fab387"
-    _MAUVE= "#cba6f7"
-    _TEAL = "#94e2d5"
-
     # ── Figure ────────────────────────────────────────────────────────────────
+    plt.style.use("default")
     _fig, (_ax1, _ax2) = plt.subplots(
         2, 1, figsize=(10, 7.5),
-        facecolor=_SURF,
-        gridspec_kw={"hspace": 0.45},
+        constrained_layout=True,
     )
 
-    def _style_ax(ax):
-        ax.set_facecolor(_BG)
-        ax.tick_params(colors=_SUB, labelsize=9)
-        ax.xaxis.label.set_color(_TEXT)
-        ax.yaxis.label.set_color(_TEXT)
-        ax.title.set_color(_TEXT)
-        for sp in ax.spines.values():
-            sp.set_edgecolor(_GRID)
-        ax.grid(True, color=_GRID, linewidth=0.7, alpha=0.8)
-        ax.set_axisbelow(True)
-
-    _style_ax(_ax1)
-    _style_ax(_ax2)
+    _ax1.grid(True, linewidth=0.6, alpha=0.5)
+    _ax2.grid(True, linewidth=0.6, alpha=0.5)
 
     # ── Step response ─────────────────────────────────────────────────────────
-    _ax1.plot(_t_out, _y, color=_BLUE, lw=2.2, label="Output  y(t)", zorder=3)
-    _ax1.axhline(1.0, color=_RED,  ls="--", lw=1.3, alpha=0.8, label="Setpoint  r = 1")
-    _ax1.axhline(_ss_val, color=_GRN, ls=":",  lw=1.1, alpha=0.9,
+    _ax1.plot(_t_out, _y, color="C0", lw=2.0, label="Output  y(t)", zorder=3)
+    _ax1.axhline(1.0, color="C3", ls="--", lw=1.2, alpha=0.9, label="Setpoint  r = 1")
+    _ax1.axhline(_ss_val, color="C2", ls=":", lw=1.1, alpha=0.9,
                  label=f"Steady-state ≈ {_ss_val:.3f}")
     # ±2 % settling band
-    _ax1.axhspan(1 - _band, 1 + _band, alpha=0.07, color=_GRN)
+    _ax1.axhspan(1 - _band, 1 + _band, alpha=0.08, color="C2")
 
     if _overshoot > 0.1:
         _pk_i = int(np.argmax(_y))
-        _ax1.plot(_t_out[_pk_i], _peak, marker="v", color=_PEACH, ms=9, zorder=5,
+        _ax1.plot(_t_out[_pk_i], _peak, marker="v", color="C1", ms=8, zorder=5,
                   label=f"Peak = {_peak:.3f}  ({_overshoot:.1f}% OS)")
 
     # Rise & settle markers
     if _rise < float("inf") and _i90 > 0:
-        _ax1.axvline(_t_out[_i90], color=_MAUVE, ls=":", lw=1, alpha=0.7)
+        _ax1.axvline(_t_out[_i90], color="0.4", ls=":", lw=1, alpha=0.8)
     if _settle < float("inf"):
-        _ax1.axvline(_settle, color=_TEAL, ls=":", lw=1, alpha=0.7,
+        _ax1.axvline(_settle, color="0.2", ls=":", lw=1, alpha=0.8,
                      label=f"Settle ≈ {_settle:.1f} s")
 
-    _ax1.set_xlabel("Time  (s)", fontsize=10)
+    _ax1.set_xlabel("Time (s)", fontsize=10)
     _ax1.set_ylabel("Output", fontsize=10)
     _ax1.set_title(
-        f"Closed-Loop Step Response  ·  [{controller_type.value}]  "
+        f"Closed-Loop Step Response [{controller_type.value}]  "
         f"Kp = {_Kp}   Ki = {_Ki}   Kd = {_Kd}",
         fontsize=10, pad=8,
     )
-    _leg1 = _ax1.legend(
-        facecolor="#313244", edgecolor=_GRID, labelcolor=_TEXT,
-        fontsize=8, framealpha=0.9,
-    )
+    _ax1.legend(fontsize=8, framealpha=0.95)
 
     # ── Error vs time ─────────────────────────────────────────────────────────
-    _ax2.plot(_t_out, _e, color=_RED, lw=2, zorder=3)
-    _ax2.axhline(0, color=_GRID, ls="--", lw=1)
+    _ax2.plot(_t_out, _e, color="C3", lw=1.8, zorder=3)
+    _ax2.axhline(0, color="0.4", ls="--", lw=1)
     _ax2.fill_between(_t_out, _e, 0, where=(_e > 0),
-                      alpha=0.18, color=_RED,   label="Positive error")
+                      alpha=0.18, color="C3", label="Positive error")
     _ax2.fill_between(_t_out, _e, 0, where=(_e < 0),
-                      alpha=0.18, color=_BLUE,  label="Negative error")
+                      alpha=0.18, color="C0", label="Negative error")
     _ax2.yaxis.set_major_formatter(ticker.FormatStrFormatter("%.2f"))
-    _ax2.set_xlabel("Time  (s)", fontsize=10)
-    _ax2.set_ylabel("Error  e(t) = 1 − y(t)", fontsize=10)
+    _ax2.set_xlabel("Time (s)", fontsize=10)
+    _ax2.set_ylabel("Error e(t) = 1 - y(t)", fontsize=10)
     _ax2.set_title("Error vs Time", fontsize=10, pad=8)
-    _ax2.legend(
-        facecolor="#313244", edgecolor=_GRID, labelcolor=_TEXT,
-        fontsize=8, framealpha=0.9,
-    )
+    _ax2.legend(fontsize=8, framealpha=0.95)
 
-    plt.tight_layout(pad=2.5)
-
-    # ── Metrics cards (HTML) ──────────────────────────────────────────────────
-    def _card(label, val, color):
-        return f"""
-        <div style="background:#181825;border:1px solid #313244;border-top:3px solid {color};
-                    border-radius:8px;padding:14px 22px;min-width:130px;flex:1">
-          <div style="font-size:10px;color:#a6adc8;text-transform:uppercase;
-                      letter-spacing:1.2px;margin-bottom:4px">{label}</div>
-          <div style="font-size:20px;font-weight:700;color:{color}">{val}</div>
-        </div>"""
-
-    _stab_col = _GRN if _stable else _RED
-    _stab_txt = "✅  Stable" if _stable else "❌  Unstable"
-    _os_col   = _GRN if _overshoot < 10 else (_YEL if _overshoot < 25 else _RED)
-    _sse_col  = _GRN if _ss_err < 0.05  else (_YEL if _ss_err  < 0.2  else _RED)
+    _stab_txt = "Stable" if _stable else "Unstable"
     _rise_txt = f"{_rise:.2f} s" if _rise < float("inf") else "—"
-    _settl_txt= f"{_settle:.2f} s" if _settle < float("inf") else "—"
+    _settl_txt = f"{_settle:.2f} s" if _settle < float("inf") else "—"
 
-    _cards = mo.md(f"""
-    <div style="display:flex;gap:12px;flex-wrap:wrap;margin:4px 0 10px 0;font-family:monospace">
-      {_card("Stability",          _stab_txt,            _stab_col)}
-      {_card("Steady-State Error", f"{_ss_err:.4f}",     _sse_col)}
-      {_card("Overshoot",          f"{_overshoot:.1f}%", _os_col)}
-      {_card("Rise Time (10→90%)", _rise_txt,            _MAUVE)}
-      {_card("Settling Time (±2%)",_settl_txt,           _TEAL)}
-    </div>
-    """)
+    _metrics_table = mo.md(f"""
+| Metric | Value |
+|---|---|
+| Stability | {_stab_txt} |
+| Steady-state error | {_ss_err:.4f} |
+| Overshoot | {_overshoot:.1f}% |
+| Rise time (10%-90%) | {_rise_txt} |
+| Settling time (±2%) | {_settl_txt} |
+""")
 
-    mo.vstack([_cards, mo.as_html(_fig)])
+    mo.vstack([_metrics_table, mo.as_html(_fig)])
     return
