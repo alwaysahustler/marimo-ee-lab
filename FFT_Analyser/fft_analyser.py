@@ -8,13 +8,11 @@ def __():
     import numpy as np
     from scipy import signal
     import matplotlib
-    matplotlib.use("Agg")   # non-interactive backend — required in marimo
+    matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     return np, signal, plt
 
 
-@app.cell
-def __():
 @app.cell
 def __():
     signal_type = mo.ui.dropdown(
@@ -64,11 +62,6 @@ def __():
     )
 
 
-# ---------------------------------------------------------------------------
-# 4. SIGNAL GENERATION
-#    Always use .value on UI elements — the element object itself is NOT
-#    its value; comparisons like `signal_type == "Chirp"` are always False.
-# ---------------------------------------------------------------------------
 @app.cell
 def __(
     np, signal,
@@ -84,44 +77,36 @@ def __(
     phase_v   = float(phase.value)
     chirp_v   = float(chirp_end.value)
     am_mod_v  = float(am_mod.value)
-    sig_type  = signal_type.value   # str, not element
+    sig_type  = signal_type.value
 
     t = np.arange(0, dur_v, 1.0 / fs_v)
 
     if sig_type == "Single tone":
         x = amp_v * np.sin(2 * np.pi * f1_v * t + phase_v)
-
     elif sig_type == "Two-tone":
         x = amp_v * (
             0.7 * np.sin(2 * np.pi * f1_v * t + phase_v)
             + 0.4 * np.sin(2 * np.pi * f2_v * t)
         )
-
     elif sig_type == "Chirp":
         x = amp_v * signal.chirp(
             t, f0=f1_v, f1=chirp_v, t1=dur_v, method="linear"
         )
-
     elif sig_type == "Square wave":
         x = amp_v * signal.square(2 * np.pi * f1_v * t + phase_v)
-
     elif sig_type == "Noisy sine":
         rng = np.random.default_rng(7)
         x = (
             amp_v * np.sin(2 * np.pi * f1_v * t + phase_v)
             + noise_v * rng.standard_normal(len(t))
         )
-
     elif sig_type == "AM signal":
         carrier  = np.sin(2 * np.pi * f2_v * t)
         envelope = 1.0 + 0.65 * np.sin(2 * np.pi * am_mod_v * t)
         x = amp_v * envelope * carrier
-
     else:
         x = amp_v * np.sin(2 * np.pi * f1_v * t + phase_v)
 
-    # Add light background noise to all non-noisy presets so the
-    # spectrogram looks more interesting.
     if sig_type != "Noisy sine":
         rng2 = np.random.default_rng(7)
         x = x + noise_v * 0.15 * rng2.standard_normal(len(t))
@@ -131,11 +116,10 @@ def __(
 
 
 @app.cell
-@app.cell
 def __(np, signal, x, fs, n_fft, window_name):
     n       = len(x)
     fft_len = int(min(max(256, int(n_fft.value)), max(256, n)))
-    win_nm  = window_name.value   # str, not element
+    win_nm  = window_name.value
 
     if win_nm == "rectangular":
         w = np.ones(n)
@@ -143,7 +127,7 @@ def __(np, signal, x, fs, n_fft, window_name):
         w = signal.windows.hann(n, sym=False)
     elif win_nm == "hamming":
         w = signal.windows.hamming(n, sym=False)
-    else:  # blackman
+    else:
         w = signal.windows.blackman(n, sym=False)
 
     xw         = x * w
@@ -153,7 +137,6 @@ def __(np, signal, x, fs, n_fft, window_name):
     power      = magnitude ** 2
     phase_spec = np.unwrap(np.angle(X))
 
-    # Top-5 dominant peaks, DC excluded
     mag_no_dc    = np.where(freqs > 0, magnitude, 0.0)
     peak_indices = np.argsort(mag_no_dc)[-5:][::-1]
     peak_table   = [
@@ -165,7 +148,6 @@ def __(np, signal, x, fs, n_fft, window_name):
     return freqs, magnitude, power, phase_spec, peak_table
 
 
-@app.cell
 @app.cell
 def __(plt, t, x, freqs, magnitude, power, phase_spec):
     fmax = float(freqs[-1])
@@ -190,7 +172,6 @@ def __(plt, t, x, freqs, magnitude, power, phase_spec):
     return fig_time, fig_mag, fig_power, fig_phase
 
 
-@app.cell
 @app.cell
 def __(peak_table):
     peak_rows = [
@@ -220,7 +201,6 @@ def __(peak_table):
     return dominant_stat, peak_table_ui
 
 
-@app.cell
 @app.cell
 def __(dominant_stat, peak_table_ui, fig_time, fig_mag, fig_power, fig_phase):
     mo.vstack([
