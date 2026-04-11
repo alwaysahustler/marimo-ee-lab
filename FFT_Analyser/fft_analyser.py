@@ -205,7 +205,7 @@ def __(peak_table):
 @app.cell
 def __(dominant_stat, peak_table_ui, fig_time, fig_mag, fig_power, fig_phase):
     mo.vstack([
-    mo.md("## 📊 Views"),
+    mo.md("## Views"),
     mo.hstack([
         mo.vstack([dominant_stat, peak_table_ui]),
         mo.vstack([fig_time, fig_mag]), 
@@ -235,7 +235,7 @@ def __(np, plt, signal, x, fs):
     fig_spec.tight_layout()
 
     mo.vstack([
-        mo.md("## 🌈 Spectrogram"),
+        mo.md("##  Spectrogram"),
         fig_spec
     ])
 
