@@ -100,7 +100,7 @@ def _controls():
     mo.vstack([signal_type, fs, duration, f1, f2]),
     mo.vstack([amplitude, noise, phase, chirp_end, am_mod]),
     mo.vstack([window_name, n_fft]),
-], align="start", gap=2)}
+], align="start")}
 """
     )
 
@@ -302,7 +302,7 @@ def _layout(dominant_stat, peak_table_ui, fig_time, fig_mag, fig_power, fig_phas
 # 9. SPECTROGRAM  (named fig_spec to avoid collision with plot figs above)
 # ---------------------------------------------------------------------------
 @app.cell
-def _spectrogram(plt, signal, x, fs):
+def _spectrogram(np, plt, signal, x, fs):
     fs_v     = float(fs.value)
     nperseg  = min(256, max(32, len(x) // 8))
     noverlap = nperseg // 2
