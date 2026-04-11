@@ -5,6 +5,7 @@ app = mo.App(width="full")
 
 @app.cell
 def __():
+    import marimo as mo
     import numpy as np
     from scipy import signal
     import matplotlib
@@ -68,7 +69,7 @@ def __(
     signal_type, fs, duration, f1, f2,
     amplitude, noise, phase, chirp_end, am_mod,
 ):
-    fs_v      = float(fs.value)
+    spectrum_fs     = float(fs.value)
     dur_v     = float(duration.value)
     f1_v      = float(f1.value)
     f2_v      = float(f2.value)
@@ -79,7 +80,7 @@ def __(
     am_mod_v  = float(am_mod.value)
     sig_type  = signal_type.value
 
-    t = np.arange(0, dur_v, 1.0 / fs_v)
+    t = np.arange(0, dur_v, 1.0 / spectrum_fs)
 
     if sig_type == "Single tone":
         x = amp_v * np.sin(2 * np.pi * f1_v * t + phase_v)
@@ -204,20 +205,13 @@ def __(peak_table):
 @app.cell
 def __(dominant_stat, peak_table_ui, fig_time, fig_mag, fig_power, fig_phase):
     mo.vstack([
-        mo.md("## 📊 Views"),
-        mo.hstack(
-            [
-                mo.vstack([dominant_stat, peak_table_ui]),
-                mo.vstack([mo.image(fig_time), mo.image(fig_mag)]),
-            ],
-            widths=[1, 2],
-            align="start",
-        ),
-        mo.hstack(
-            [mo.image(fig_power), mo.image(fig_phase)],
-            align="start",
-        ),
-    ])
+    mo.md("## 📊 Views"),
+    mo.hstack([
+        mo.vstack([dominant_stat, peak_table_ui]),
+        mo.vstack([fig_time, fig_mag]), # Removed mo.image()
+    ], widths=[1, 2], align="start"),
+    mo.hstack([fig_power, fig_phase], align="start"), # Removed mo.image()
+])
 
 
 @app.cell
