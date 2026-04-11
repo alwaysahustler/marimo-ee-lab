@@ -51,7 +51,7 @@ def __(mo, ma_slider, mf_slider, vdc_slider, cycles_slider, np, plt, gridspec):
     N = 10_000
     t = np.linspace(0, T_total, N, endpoint=False)
 
-    v_ref = ma * np.sin(2 * np.pi * f_ref * t)
+    v_ref = ma * np.sin(2 * np.pi * _f_ref * t)
 
     carrier_phase = (f_carrier * t) % 1.0
     v_tri = 2 * np.abs(2 * carrier_phase - 1) - 1
