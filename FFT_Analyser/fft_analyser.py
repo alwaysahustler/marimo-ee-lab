@@ -208,7 +208,7 @@ def __(dominant_stat, peak_table_ui, fig_time, fig_mag, fig_power, fig_phase):
     mo.md("## 📊 Views"),
     mo.hstack([
         mo.vstack([dominant_stat, peak_table_ui]),
-        mo.vstack([fig_time, fig_mag]), # Removed mo.image()
+        mo.vstack([fig_time, fig_mag]), 
     ], widths=[1, 2], align="start"),
     mo.hstack([fig_power, fig_phase], align="start"), # Removed mo.image()
 ])
@@ -236,7 +236,7 @@ def __(np, plt, signal, x, fs):
 
     mo.vstack([
         mo.md("## 🌈 Spectrogram"),
-        mo.image(fig_spec),
+        fig_spec
     ])
 
 
