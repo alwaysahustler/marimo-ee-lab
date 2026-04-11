@@ -1,25 +1,8 @@
-"""
-Interactive FFT Analyzer — marimo template
-==========================================
-A reactive notebook for exploring time-domain signals and their
-frequency-domain representations. Designed as a reusable teaching
-and experimentation template.
-
-Run with:
-    marimo edit fft_analyzer.py
-    marimo run  fft_analyzer.py   # read-only, shareable
-"""
-
 import marimo as mo
 
 app = mo.App(width="full")
 
 
-# ---------------------------------------------------------------------------
-# 1. SHARED IMPORTS
-#    marimo cell functions MUST be named __ (double underscore).
-#    Parameters declare dependencies; return values export into the DAG.
-# ---------------------------------------------------------------------------
 @app.cell
 def __():
     import numpy as np
@@ -30,33 +13,8 @@ def __():
     return np, signal, plt
 
 
-# ---------------------------------------------------------------------------
-# 2. INTRO
-# ---------------------------------------------------------------------------
 @app.cell
 def __():
-    mo.md(
-        r"""
-# 📡 Interactive FFT Analyzer
-
-A ready-to-use marimo notebook for exploring how signals look in the
-**time domain** and the **frequency domain**.
-
-**What makes this a good marimo template:**
-- Every control is reactive — change a slider, all plots update instantly.
-- The cell DAG makes data-flow explicit and auditable.
-- No hidden global state; swap the signal-generation cell with your
-  own CSV / WAV / sensor source and everything else stays intact.
-
----
-"""
-    )
-
-
-# ---------------------------------------------------------------------------
-# 3. CONTROLS
-#    All UI elements live in one cell so they are easy to find and extend.
-# ---------------------------------------------------------------------------
 @app.cell
 def __():
     signal_type = mo.ui.dropdown(
@@ -172,9 +130,7 @@ def __(
     return t, x
 
 
-# ---------------------------------------------------------------------------
-# 5. FFT COMPUTATION
-# ---------------------------------------------------------------------------
+@app.cell
 @app.cell
 def __(np, signal, x, fs, n_fft, window_name):
     n       = len(x)
@@ -209,9 +165,7 @@ def __(np, signal, x, fs, n_fft, window_name):
     return freqs, magnitude, power, phase_spec, peak_table
 
 
-# ---------------------------------------------------------------------------
-# 6. PLOTS
-# ---------------------------------------------------------------------------
+@app.cell
 @app.cell
 def __(plt, t, x, freqs, magnitude, power, phase_spec):
     fmax = float(freqs[-1])
@@ -236,9 +190,7 @@ def __(plt, t, x, freqs, magnitude, power, phase_spec):
     return fig_time, fig_mag, fig_power, fig_phase
 
 
-# ---------------------------------------------------------------------------
-# 7. STATS + PEAK TABLE
-# ---------------------------------------------------------------------------
+@app.cell
 @app.cell
 def __(peak_table):
     peak_rows = [
@@ -268,9 +220,7 @@ def __(peak_table):
     return dominant_stat, peak_table_ui
 
 
-# ---------------------------------------------------------------------------
-# 8. LAYOUT
-# ---------------------------------------------------------------------------
+@app.cell
 @app.cell
 def __(dominant_stat, peak_table_ui, fig_time, fig_mag, fig_power, fig_phase):
     mo.vstack([
@@ -290,9 +240,6 @@ def __(dominant_stat, peak_table_ui, fig_time, fig_mag, fig_power, fig_phase):
     ])
 
 
-# ---------------------------------------------------------------------------
-# 9. SPECTROGRAM
-# ---------------------------------------------------------------------------
 @app.cell
 def __(np, plt, signal, x, fs):
     fs_v     = float(fs.value)
@@ -313,52 +260,10 @@ def __(np, plt, signal, x, fs):
     fig_spec.colorbar(mesh, ax=ax_sg, label="Power (dB)")
     fig_spec.tight_layout()
 
-    return (fig_spec,)
-
-
-# ---------------------------------------------------------------------------
-# 10. SPECTROGRAM DISPLAY
-# ---------------------------------------------------------------------------
-@app.cell
-def __(fig_spec):
     mo.vstack([
         mo.md("## 🌈 Spectrogram"),
         mo.image(fig_spec),
     ])
-
-
-# ---------------------------------------------------------------------------
-# 11. USAGE GUIDE
-# ---------------------------------------------------------------------------
-@app.cell
-def __():
-    mo.md(
-        r"""
----
-
-## How to use this template
-
-| Step | What to do |
-|------|-----------|
-| 1 | Pick a **signal preset** — each highlights different FFT concepts. |
-| 2 | Tweak **frequency, amplitude, noise, phase** and watch every plot update reactively. |
-| 3 | Change the **FFT window** to see spectral leakage effects in real time. |
-| 4 | Increase **FFT points** for finer frequency resolution. |
-| 5 | Replace the signal-generation cell with your own data source (CSV, WAV, sensor stream) — nothing else needs to change. |
-
-### marimo patterns demonstrated here
-
-- **`def __():` cell naming** — marimo only recognises `__` as a cell function name.
-  Named functions like `def _generate():` are treated as plain Python and their
-  parameters (dependency injection) and return values (DAG exports) are silently ignored.
-- **`.value` unwrapping** — always use `slider.value` / `dropdown.value` inside
-  computation cells; comparing the element object to a plain string always evaluates `False`.
-- **`matplotlib.use("Agg")`** — set the non-interactive backend once at import time;
-  marimo displays figures via `mo.image(fig)`.
-- **One imports cell** — return shared libraries (`np`, `signal`, `plt`) so the
-  reactive DAG is explicit and auditable.
-"""
-    )
 
 
 if __name__ == "__main__":
