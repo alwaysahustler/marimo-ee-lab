@@ -15,27 +15,6 @@ def __():
 
 @app.cell
 def __(mo):
-    mo.md(
-        r"""
-        # ⚡ Sinusoidal PWM Generation
-        ### Unipolar vs Bipolar Modulation — Interactive Visualiser
-
-        ---
-
-        **Sinusoidal PWM (SPWM)** compares a sinusoidal reference signal against a high-frequency triangular carrier.
-        The two common schemes differ in how the output switches:
-
-        | Scheme | Output levels | Switching frequency | THD |
-        |--------|--------------|---------------------|-----|
-        | **Unipolar** | 0, +Vdc (or 0, −Vdc) | Effectively 2× carrier | Lower |
-        | **Bipolar** | +Vdc, −Vdc | Carrier frequency | Higher |
-        """
-    )
-    return
-
-
-@app.cell
-def __(mo):
     ma_slider = mo.ui.slider(
         start=0.1, stop=1.2, step=0.05, value=0.8,
         label="Modulation Index  *mₐ*"
@@ -59,46 +38,35 @@ def __(mo):
 
 @app.cell
 def __(mo, ma_slider, mf_slider, vdc_slider, cycles_slider, np, plt, gridspec):
-    # ── Parameters ────────────────────────────────────────────────────────────
     ma   = ma_slider.value
     mf   = int(mf_slider.value)
     Vdc  = vdc_slider.value
     n_cycles = int(cycles_slider.value)
 
-    _f_ref    = 50          # Hz  (reference / fundamental)
-    f_carrier = mf * _f_ref  # Hz
+    _f_ref    = 50
+    f_carrier = mf * _f_ref
     T_ref     = 1 / _f_ref
     T_total   = n_cycles * T_ref
 
     N = 10_000
     t = np.linspace(0, T_total, N, endpoint=False)
 
-    # ── Signals ───────────────────────────────────────────────────────────────
-    v_ref = ma * np.sin(2 * np.pi * f_ref * t)          # normalised −1 … +1
+    v_ref = ma * np.sin(2 * np.pi * f_ref * t)
 
-    # Triangular carrier  (normalised −1 … +1)
     carrier_phase = (f_carrier * t) % 1.0
     v_tri = 2 * np.abs(2 * carrier_phase - 1) - 1
 
-    # ── Unipolar PWM ─────────────────────────────────────────────────────────
-    # Leg A: S1 ON when v_ref > v_tri  → V_AN = Vdc else 0
-    # Leg B: S3 ON when v_ref > −v_tri → V_BN = Vdc else 0
-    # Output V_AB = V_AN − V_BN  → three levels: +Vdc, 0, −Vdc
     V_AN = np.where(v_ref >  v_tri,  Vdc, 0.0)
     V_BN = np.where(v_ref > -v_tri,  Vdc, 0.0)
     v_uni = V_AN - V_BN
 
-    # ── Bipolar PWM ───────────────────────────────────────────────────────────
-    # Single comparison: +Vdc when v_ref > v_tri, else −Vdc
     v_bip = np.where(v_ref > v_tri, Vdc, -Vdc)
 
-    # ── Fundamental component (for annotation) ────────────────────────────────
-    _V1_uni = ma * Vdc          # ≈ fundamental peak  (linear region)
+    _V1_uni = ma * Vdc         
     _V1_bip = ma * Vdc
 
-    t_ms = t * 1e3             # time axis in ms
+    t_ms = t * 1e3             
 
-    # ── Plot ─────────────────────────────────────────────────────────────────
     plt.rcParams.update({
         "figure.facecolor": "#0f1117",
         "axes.facecolor":   "#0f1117",
@@ -122,14 +90,13 @@ def __(mo, ma_slider, mf_slider, vdc_slider, cycles_slider, np, plt, gridspec):
                            hspace=0.55, wspace=0.35,
                            left=0.07, right=0.97, top=0.93, bottom=0.06)
 
-    CLR_TRI  = "#60a5fa"   # blue  — carrier
-    CLR_REF  = "#f97316"   # orange — reference
-    CLR_UNI  = "#34d399"   # green  — unipolar output
-    CLR_BIP  = "#a78bfa"   # purple — bipolar output
-    CLR_NEG  = "#fb7185"   # pink   — −v_tri
+    CLR_TRI  = "#60a5fa"
+    CLR_REF  = "#f97316"
+    CLR_UNI  = "#34d399"
+    CLR_BIP  = "#a78bfa"
+    CLR_NEG  = "#fb7185"
     ALPHA_C  = 0.55
 
-    # ── Row 0 : Unipolar — modulation signals ─────────────────────────────────
     ax0 = fig.add_subplot(gs[0, 0])
     ax0.plot(t_ms, v_tri,  color=CLR_TRI,  lw=0.9, alpha=ALPHA_C, label="Carrier  v_tri")
     ax0.plot(t_ms, -v_tri, color=CLR_NEG,  lw=0.9, alpha=ALPHA_C, ls="--", label="−v_tri")
@@ -141,7 +108,6 @@ def __(mo, ma_slider, mf_slider, vdc_slider, cycles_slider, np, plt, gridspec):
     ax0.axhline(0, color="#374151", lw=0.5)
     ax0.grid(True)
 
-    # ── Row 0 : Bipolar — modulation signals ──────────────────────────────────
     ax1 = fig.add_subplot(gs[0, 1])
     ax1.plot(t_ms, v_tri, color=CLR_TRI, lw=0.9, alpha=ALPHA_C, label="Carrier  v_tri")
     ax1.plot(t_ms, v_ref, color=CLR_REF, lw=1.5, label=f"Reference  (mₐ={ma:.2f})")
@@ -151,7 +117,6 @@ def __(mo, ma_slider, mf_slider, vdc_slider, cycles_slider, np, plt, gridspec):
     ax1.axhline(0, color="#374151", lw=0.5)
     ax1.grid(True)
 
-    # ── Row 1 : V_AN and V_BN (unipolar) ──────────────────────────────────────
     ax2 = fig.add_subplot(gs[1, 0])
     ax2.step(t_ms, V_AN, color="#38bdf8", lw=0.8, where="post", alpha=0.9, label="V_AN")
     ax2.step(t_ms, V_BN, color=CLR_REF,  lw=0.8, where="post", alpha=0.7, label="V_BN")
@@ -162,7 +127,6 @@ def __(mo, ma_slider, mf_slider, vdc_slider, cycles_slider, np, plt, gridspec):
     ax2.legend(fontsize=7, loc="upper right", framealpha=0.15)
     ax2.grid(True)
 
-    # ── Row 1 : Bipolar switching logic annotation ─────────────────────────────
     ax3 = fig.add_subplot(gs[1, 1])
     cond = v_ref > v_tri
     ax3.fill_between(t_ms, 0, 1, where=cond,  color="#a78bfa", alpha=0.3,
@@ -177,7 +141,6 @@ def __(mo, ma_slider, mf_slider, vdc_slider, cycles_slider, np, plt, gridspec):
     ax3.legend(fontsize=7, loc="upper right", framealpha=0.15)
     ax3.grid(True)
 
-    # ── Row 2 : PWM output waveforms ──────────────────────────────────────────
     ax4 = fig.add_subplot(gs[2, 0])
     ax4.step(t_ms, v_uni, color=CLR_UNI, lw=0.9, where="post")
     fund_uni = _V1_uni * np.sin(2 * np.pi * _f_ref * t)
@@ -201,7 +164,6 @@ def __(mo, ma_slider, mf_slider, vdc_slider, cycles_slider, np, plt, gridspec):
     ax5.legend(fontsize=7, loc="upper right", framealpha=0.15)
     ax5.grid(True)
 
-    # ── Row 3 : FFT spectra ────────────────────────────────────────────────────
     def compute_fft(sig, dt):
         n    = len(sig)
         freq = np.fft.rfftfreq(n, d=dt)
@@ -245,7 +207,6 @@ def __(mo, ma_slider, mf_slider, vdc_slider, cycles_slider, np, plt, gridspec):
 
 @app.cell
 def __(mo, ma, mf, Vdc, v_uni, v_bip, np):
-    # ── Metrics callout ────────────────────────────────────────────────────────
     def rms(x): return np.sqrt(np.mean(x**2))
     def thd(sig, f0, t, N):
         freq = np.fft.rfftfreq(N, d=t[1]-t[0])
@@ -280,33 +241,6 @@ def __(mo, ma, mf, Vdc, v_uni, v_bip, np):
     """)
     return
 
-
-@app.cell
-def __(mo):
-    mo.md("""
-    ---
-    ## 📐 Theory Summary
-
-    ### Unipolar SPWM
-    - Two complementary leg references: Leg A uses **+v_ref vs v_tri**, Leg B uses **−v_ref vs v_tri**
-    - Output V_AB swings: **+V_dc → 0 → −V_dc** (three levels per cycle)
-    - Harmonic content centred at **2 m_f**, **4 m_f**, ... (even multiples cancel)
-    - Lower filter inductance needed for same ripple current
-
-    ### Bipolar SPWM
-    - Single comparison: **v_ref > v_tri** → +V_dc, else → −V_dc
-    - Output swings rail-to-rail every switching cycle (two levels only)
-    - Harmonics at **m_f**, **3 m_f**, **5 m_f**, ... (all odd multiples)
-    - Simpler logic, but higher ripple and filter requirement
-
-    ### Key Relationships
-    ```
-    V₁ = mₐ · V_dc                    (fundamental peak, linear region: mₐ ≤ 1)
-    f_sw_effective_uni = 2 · m_f · f_ref
-    f_sw_effective_bip =     m_f · f_ref
-    ```
-    """)
-    return
 
 
 if __name__ == "__main__":
