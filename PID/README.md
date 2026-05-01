@@ -3,7 +3,7 @@
 
 This folder contains a Marimo notebook for control-systems analysis of a second-order plant using P, PI, and PID control.
 
-[![Open in molab](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/alwaysahustler/marimo-ee-lab/blob/main/control-system/PID/PID_controller.py)
+[![Open in molab](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/alwaysahustler/marimo-ee-lab/blob/main/PID/PID_controller.py)
 ## Notebook
 
 - `PID_controller.py`: interactive notebook for tuning controller gains and observing closed-loop response
